@@ -183,17 +183,17 @@ Napi::Value OpenHive(const Napi::CallbackInfo &info)
                           : false;
 
     auto registryKey = isWritableDefined
-                           ? RegistryKey(hive, isWritable, true)
-                           : RegistryKey(hive, getDefaultIsWritable(hiveP), true);
+                           ? new RegistryKey(hive, isWritable, true)
+                           : new RegistryKey(hive, getDefaultIsWritable(hiveP), true);
 
-    if (!registryKey.IsValid())
+    if (!registryKey->IsValid())
     {
       Napi::TypeError::New(env, "Hive is not valid")
           .ThrowAsJavaScriptException();
       return env.Null();
     }
 
-    return RegistryKeyWrapper::NewInstance(info.Env(), Napi::External<RegistryKey>::New(env, &registryKey));
+    return RegistryKeyWrapper::NewInstance(info.Env(), Napi::External<RegistryKey>::New(env, registryKey));
   }
   catch (const RegistryException &e)
   {
