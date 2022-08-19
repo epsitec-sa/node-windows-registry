@@ -53,7 +53,10 @@ namespace Epsitec
 			{
 				return RegistryKey(hkey, writable, false, this->regView);
 			}
-			return RegistryKey();
+			else
+			{
+				throw RegistryException(std::to_string(result).c_str());
+			}
 		}
 		bool RegistryKey::DeleteSubkey(LPCTSTR subkey) const
 		{
