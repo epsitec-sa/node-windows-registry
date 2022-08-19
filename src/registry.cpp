@@ -73,7 +73,7 @@ Napi::Value OpenHive(const Napi::CallbackInfo &info)
   unsigned int result = 0;
   Napi::Env env = info.Env();
 
-  if (info.Length() < 1 || info.Length() < 2)
+  if (info.Length() < 1 || info.Length() > 2)
   {
     Napi::TypeError::New(env, "Wrong number of arguments")
         .ThrowAsJavaScriptException();
@@ -100,8 +100,7 @@ Napi::Value OpenHive(const Napi::CallbackInfo &info)
   auto registryKey = isWritableDefined
                          ? RegistryKey((HKEY)hive, isWritable, true)
                          : RegistryKey((HKEY)hive, getDefaultIsWritable(hive), true);
-  return env.Null();
-  //return RegistryKeyWrapper::NewInstance(info.Env(), Napi::External::New(env, &registryKey));
+  return RegistryKeyWrapper::NewInstance(info.Env(), Napi::External<RegistryKey>::New(env, &registryKey));
 }
 
 Napi::Function RegistryKeyWrapper::GetClass(Napi::Env env)
