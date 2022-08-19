@@ -81,6 +81,7 @@ namespace Epsitec
 			RegistryKey &operator=(const RegistryKey &key) = delete;
 
 		public:
+			HKEY handle;
 			bool IsValid() const { return this->handle != nullptr; }
 			bool IsSystemKey() const { return (this->state & 2) != 0; }
 			bool IsWritable() const { return (this->state & 4) != 0; }
@@ -166,7 +167,6 @@ namespace Epsitec
 		private:
 			int state;
 			RegistryView regView;
-			HKEY handle;
 		};
 	}
 }
