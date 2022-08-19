@@ -100,6 +100,15 @@ namespace Epsitec
 				return subkeyCount;
 			return -1;
 		}
+		int RegistryKey::ValueCount(LPDWORD maxValueLength) const
+		{
+			this->EnsureValid();
+			DWORD valueCount;
+			auto result = ::RegQueryInfoKey(this->handle, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &valueCount, maxValueLength, nullptr, nullptr, nullptr);
+			if (result == ERROR_SUCCESS)
+				return valueCount;
+			return -1;
+		}
 		std::vector<LPCTSTR> RegistryKey::SubkeyNames() const
 		{
 			this->EnsureValid();
@@ -112,6 +121,26 @@ namespace Epsitec
 				{
 					DWORD size = sizeof(buffer);
 					auto result = ::RegEnumKeyEx(this->handle, i, buffer, &size, nullptr, nullptr, nullptr, nullptr);
+					if (result == ERROR_SUCCESS)
+						names.push_back(buffer);
+					else
+						break;
+				}
+			}
+			return names;
+		}
+		std::vector<LPCTSTR> RegistryKey::ValueNames() const
+		{
+			this->EnsureValid();
+			std::vector<LPCTSTR> names;
+			auto count = this->SubkeyCount();
+			if (count > 0)
+			{
+				TCHAR buffer[256];
+				for (int i = 0; i < count; ++i)
+				{
+					DWORD size = sizeof(buffer);
+					auto result = ::RegEnumValue(this->handle, i, buffer, &size, nullptr, nullptr, nullptr, nullptr);
 					if (result == ERROR_SUCCESS)
 						names.push_back(buffer);
 					else

@@ -81,7 +81,9 @@ namespace Epsitec
 			bool IsSystemKey() const { return (this->state & 2) != 0; }
 			bool IsWritable() const { return (this->state & 4) != 0; }
 			int SubkeyCount(LPDWORD maxSubkeyLength = nullptr) const;
+			int ValueCount(LPDWORD maxValueLength = nullptr) const;
 			std::vector<LPCTSTR> SubkeyNames() const;
+			std::vector<LPCTSTR> ValueNames() const;
 			RegistryKey CreateSubkey(LPCTSTR subkey, bool writable, RegistryOptions options = RegistryOptions::None) const;
 			RegistryKey OpenSubkey(LPCTSTR name, bool writable) const;
 			bool DeleteSubkey(LPCTSTR subkey = nullptr) const;
