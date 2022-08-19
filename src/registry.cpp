@@ -1,61 +1,26 @@
 //#define NAPI_VERSION 4
 
-#include <napi.h>
+#include "registry.h"
 
-#include <windows.h>
-#include <string>
-#include "./registry/Registry.h"
-#include "./registry/RegistryKey.h"
-/*
-struct WindowHandle
+bool getDefaultIsWritable(const int64_t hive)
 {
-  HWND hwnd;
-};
-
-struct CopyDataListener
-{
-  Epsitec::Wipc::WipcUtf8Listener *listener;
-  Napi::ThreadSafeFunction tsfn;
-};
-
-void OnMessageCallback(Napi::Env env, Napi::Function jsCallback, LPCSTR message)
-{
-  // Transform native data into JS data, passing it to the provided
-  // `jsCallback` -- the TSFN's JavaScript function.
-  jsCallback.Call({Napi::String::New(env, message)});
-
-  // We're finished with the data.
-  delete message;
+  switch (hive)
+  {
+  case HKEY_LOCAL_MACHINE:
+    return false;
+  case HKEY_CURRENT_USER:
+    return true;
+  case HKEY_USERS:
+    return true;
+  case HKEY_CLASSES_ROOT:
+    return false;
+  default:
+    return false;
+  }
 }
 
-// string strHwnd, WindowHandle* hwnd -> int
-Napi::Value StringToHwnd(const Napi::CallbackInfo &info)
-{
-  Napi::Env env = info.Env();
-
-  if (info.Length() != 2)
-  {
-    Napi::TypeError::New(env, "Wrong number of arguments")
-        .ThrowAsJavaScriptException();
-    return env.Null();
-  }
-
-  if (!info[0].IsString() || !info[1].IsBuffer())
-  {
-    Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
-    return env.Null();
-  }
-
-  std::string s = info[0].As<Napi::String>().Utf8Value();
-  struct WindowHandle *hwnd = (struct WindowHandle *)info[1].As<Napi::Buffer<uint8_t>>().Data();
-
-  hwnd->hwnd = (HWND)std::stoul(s, nullptr, 16);
-
-  return env.Null();
-}
-
-// WindowHandle* hwnd -> uint32
-Napi::Value HwndToUint(const Napi::CallbackInfo &info)
+RegistryKeyWrapper::RegistryKeyWrapper(const Napi::CallbackInfo &info)
+    : ObjectWrap(info)
 {
   Napi::Env env = info.Env();
 
@@ -63,151 +28,112 @@ Napi::Value HwndToUint(const Napi::CallbackInfo &info)
   {
     Napi::TypeError::New(env, "Wrong number of arguments")
         .ThrowAsJavaScriptException();
-    return env.Null();
+    return;
   }
 
-  if (!info[0].IsBuffer())
+  if (!info[0].IsExternal())
   {
-    Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
-    return env.Null();
+    Napi::TypeError::New(env, "Wrong argument type")
+        .ThrowAsJavaScriptException();
+    return;
   }
 
-  struct WindowHandle *hwnd = (struct WindowHandle *)info[0].As<Napi::Buffer<uint8_t>>().Data();
-
-  return Napi::Number::New(env, (UINT32)hwnd->hwnd);
+  this->_registryKey = info[0].As<Napi::External<RegistryKey>>().Data();
 }
-
-// *WindowHandle targetHwnd, *WindowHandle senderHwnd, byte* data, int dataSize, int sendMessageTimeoutFlags, int timeout -> int
-Napi::Value SendCopyDataMessageTimeout(const Napi::CallbackInfo &info)
+/*
+Napi::Value RegistryKeyWrapper::Greet(const Napi::CallbackInfo &info)
 {
-  int result = 0;
   Napi::Env env = info.Env();
 
-  if (info.Length() != 6)
+  if (info.Length() < 1)
   {
     Napi::TypeError::New(env, "Wrong number of arguments")
         .ThrowAsJavaScriptException();
     return env.Null();
   }
 
-  if (!info[0].IsBuffer() || !info[1].IsBuffer() || !info[2].IsBuffer() ||
-      !info[3].IsNumber() || !info[4].IsNumber() || !info[5].IsNumber())
+  if (!info[0].IsString())
   {
-    Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
+    Napi::TypeError::New(env, "You need to introduce yourself to greet")
+        .ThrowAsJavaScriptException();
     return env.Null();
   }
 
-  struct WindowHandle *targetHwnd = (struct WindowHandle *)info[0].As<Napi::Buffer<uint8_t>>().Data();
-  struct WindowHandle *senderHwnd = (struct WindowHandle *)info[1].As<Napi::Buffer<uint8_t>>().Data();
-  char *data = info[2].As<Napi::Buffer<char>>().Data();
-  int dataSize = info[3].As<Napi::Number>().Int32Value();
-  int sendMessageTimeoutFlags = info[4].As<Napi::Number>().Int32Value();
-  int timeout = info[5].As<Napi::Number>().Int32Value();
+  Napi::String name = info[0].As<Napi::String>();
 
-  COPYDATASTRUCT cds;
-  cds.dwData = 0;
-  cds.cbData = dataSize;
-  cds.lpData = data;
+  printf("Hello %s\n", name.Utf8Value().c_str());
+  printf("I am %s\n", this->_greeterName.c_str());
 
-  auto res = SendMessageTimeoutA(targetHwnd->hwnd, WM_COPYDATA, (WPARAM)senderHwnd->hwnd, (LPARAM)(LPVOID)&cds, sendMessageTimeoutFlags, timeout, NULL);
-  if (res == 0)
-  {
-    result = 1;
-  }
+  return Napi::String::New(env, this->_greeterName);
+}*/
 
-  return Napi::Number::New(env, result);
-}
-
-// *CopyDataListener dataListener -> uint
-Napi::Value CreateCopyDataListener(const Napi::CallbackInfo &info)
+// int hive, bool writable -> RegistryKeyWrapper
+Napi::Value OpenHive(const Napi::CallbackInfo &info)
 {
   unsigned int result = 0;
   Napi::Env env = info.Env();
 
-  if (info.Length() != 2)
+  if (info.Length() < 1 || info.Length() < 2)
   {
     Napi::TypeError::New(env, "Wrong number of arguments")
         .ThrowAsJavaScriptException();
     return env.Null();
   }
 
-  if (!info[0].IsBuffer() || !info[1].IsFunction())
+  if (info.Length() == 1 && !info[0].IsNumber())
+  {
+    Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
+    return env.Null();
+  }
+  if (info.Length() == 2 && (!info[0].IsNumber() || !info[1].IsBoolean()))
   {
     Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
     return env.Null();
   }
 
-  struct CopyDataListener *dataListener = (struct CopyDataListener *)info[0].As<Napi::Buffer<uint8_t>>().Data();
+  auto hive = info[0].As<Napi::Number>().Int64Value();
+  auto isWritableDefined = info.Length() == 2;
+  auto isWritable = isWritableDefined
+                        ? info[1].As<Napi::Boolean>().Value()
+                        : false;
 
-  // Create a ThreadSafeFunction
-  auto tsfn = Napi::ThreadSafeFunction::New(
-      env,
-      info[1].As<Napi::Function>(),
-      "OnMessage",     // Name
-      0,               // Unlimited queue
-      1,               // Only one thread will use this initially
-      [](Napi::Env) {} // Finalizer used to clean threads up
-  );
-
-  auto onMessage = [&, tsfn](HWND sender, LPCSTR message)
-  {
-    size_t len = strlen(message);
-    char *char_str = new char[len + 1];
-    strncpy(char_str, message, len);
-    char_str[len] = '\0';
-
-    return tsfn.BlockingCall(char_str, OnMessageCallback) == napi_ok;
-  };
-
-  dataListener->tsfn = tsfn;
-  dataListener->listener = new Epsitec::Wipc::WipcUtf8Listener(onMessage);
-
-  result = (UINT32)dataListener->listener->Handle();
-
-  return Napi::Number::New(env, result);
+  auto registryKey = isWritableDefined
+                         ? RegistryKey((HKEY)hive, isWritable, true)
+                         : RegistryKey((HKEY)hive, getDefaultIsWritable(hive), true);
+  return env.Null();
+  //return RegistryKeyWrapper::NewInstance(info.Env(), Napi::External::New(env, &registryKey));
 }
 
-// *CopyDataListener dataListener -> int
-Napi::Value DisposeCopyDataListener(const Napi::CallbackInfo &info)
+Napi::Function RegistryKeyWrapper::GetClass(Napi::Env env)
 {
-  int result = 0;
-  Napi::Env env = info.Env();
-
-  if (info.Length() != 1)
-  {
-    Napi::TypeError::New(env, "Wrong number of arguments")
-        .ThrowAsJavaScriptException();
-    return env.Null();
-  }
-
-  if (!info[0].IsBuffer())
-  {
-    Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
-    return env.Null();
-  }
-
-  struct CopyDataListener *dataListener = (struct CopyDataListener *)info[0].As<Napi::Buffer<uint8_t>>().Data();
-
-  dataListener->tsfn.Abort();
-  delete dataListener->listener;
-  dataListener->tsfn.Release();
-
-  return Napi::Number::New(env, result);
+  return DefineClass(
+      env,
+      "RegistryKeyWrapper",
+      {
+          //RegistryKeyWrapper::InstanceMethod("subkeyNames", &RegistryKeyWrapper::SubkeyNames),
+          //RegistryKeyWrapper::InstanceMethod("valueNames", &RegistryKeyWrapper::ValueNames),
+          //RegistryKeyWrapper::InstanceMethod("getValue", &RegistryKeyWrapper::GetValue),
+      });
 }
-*/
+
+Napi::Object RegistryKeyWrapper::NewInstance(Napi::Env env, Napi::Value arg)
+{
+  Napi::EscapableHandleScope scope(env);
+  Napi::Object obj = env.GetInstanceData<Napi::FunctionReference>()->New({arg});
+  return scope.Escape(napi_value(obj)).ToObject();
+}
+
 Napi::Object Init(Napi::Env env, Napi::Object exports)
-{ /*
-  exports.Set(Napi::String::New(env, "StringToHwnd"), Napi::Function::New(env, StringToHwnd));
-  exports.Set(Napi::String::New(env, "HwndToUint"), Napi::Function::New(env, HwndToUint));
+{
+  Napi::String name = Napi::String::New(env, "RegistryKeyWrapper");
+  auto classFunc = RegistryKeyWrapper::GetClass(env);
+  Napi::FunctionReference *constructor = new Napi::FunctionReference();
+  *constructor = Napi::Persistent(classFunc);
+  env.SetInstanceData(constructor);
+  exports.Set(name, classFunc);
 
-  exports.Set(Napi::String::New(env, "SendCopyDataMessageTimeout"), Napi::Function::New(env, SendCopyDataMessageTimeout));
+  exports.Set(Napi::String::New(env, "OpenHive"), Napi::Function::New(env, OpenHive));
 
-  exports.Set(Napi::String::New(env, "CreateCopyDataListener"), Napi::Function::New(env, CreateCopyDataListener));
-  exports.Set(Napi::String::New(env, "DisposeCopyDataListener"), Napi::Function::New(env, DisposeCopyDataListener));
-
-  exports.Set(Napi::String::New(env, "sizeof_WindowHandle"), Napi::Number::New(env, sizeof(struct WindowHandle)));
-  exports.Set(Napi::String::New(env, "sizeof_CopyDataListener"), Napi::Number::New(env, sizeof(struct CopyDataListener)));
-*/
   return exports;
 }
 

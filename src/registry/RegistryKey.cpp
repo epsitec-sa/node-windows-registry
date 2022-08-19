@@ -133,7 +133,7 @@ namespace Epsitec
 		{
 			this->EnsureValid();
 			std::vector<LPCTSTR> names;
-			auto count = this->SubkeyCount();
+			auto count = this->ValueCount();
 			if (count > 0)
 			{
 				TCHAR buffer[256];
@@ -185,6 +185,12 @@ namespace Epsitec
 		}
 
 		//--------------------------------------------------------------------- GetDWord
+		RegistryValueKind RegistryKey::GetValueKind(LPCTSTR name) const
+		{
+			RegistryValueKind valueKind;
+			this->GetValue(name, valueKind);
+			return valueKind;
+		}
 
 		DWORD RegistryKey::GetDWord(LPCTSTR name, DWORD defaultValue) const
 		{

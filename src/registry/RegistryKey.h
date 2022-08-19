@@ -75,6 +75,10 @@ namespace Epsitec
 		public:
 			RegistryKey(RegistryKey &&key);
 			~RegistryKey();
+			RegistryKey() : RegistryKey(nullptr) {}
+			RegistryKey(HKEY handle, bool writable = false, bool systemKey = false, RegistryView registryView = RegistryView::Default);
+			RegistryKey(const RegistryKey &key) = delete;
+			RegistryKey &operator=(const RegistryKey &key) = delete;
 
 		public:
 			bool IsValid() const { return this->handle != nullptr; }
@@ -104,6 +108,7 @@ namespace Epsitec
 			bool SetBinary(LPCTSTR name, std::vector<BYTE> value) const { return this->SetValueInternal(name, RegistryValueKind::Binary, &value[0], (DWORD)value.size()); }
 			bool SetValue(LPCTSTR name, std::vector<BYTE> value, RegistryValueKind valueKind) const { return this->SetValueInternal(name, valueKind, &value[0], (DWORD)value.size()); }
 
+			RegistryValueKind GetValueKind(LPCTSTR name) const;
 			int GetInt(LPCTSTR name) const { return (int)this->GetDWord(name, 0); }
 			int GetInt(LPCTSTR name, int defaultValue) const { return (int)this->GetDWord(name, defaultValue); }
 			unsigned int GetUInt(LPCTSTR name) const { return (unsigned int)this->GetDWord(name, 0); }
@@ -145,12 +150,6 @@ namespace Epsitec
 			std::vector<BYTE> GetValue(LPCTSTR name, RegistryValueKind &valueKind) const;
 			std::vector<BYTE> GetValue(LPCTSTR name, std::vector<BYTE> &&defaultValue, RegistryValueKind &valueKind) const;
 			std::vector<BYTE> GetValue(LPCTSTR name, const std::vector<BYTE> &defaultValue, RegistryValueKind &valueKind) const;
-
-		private:
-			RegistryKey() : RegistryKey(nullptr) {}
-			RegistryKey(HKEY handle, bool writable = false, bool systemKey = false, RegistryView registryView = RegistryView::Default);
-			RegistryKey(const RegistryKey &key) = delete;
-			RegistryKey &operator=(const RegistryKey &key) = delete;
 
 		private:
 			REGSAM AccessMask(bool writable) const { return RegistryKey::AccessMask(this->IsWritable(), this->regView); }
