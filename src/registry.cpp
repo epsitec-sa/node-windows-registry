@@ -58,53 +58,22 @@ RegistryKeyWrapper::RegistryKeyWrapper(const Napi::CallbackInfo &info)
   this->_registryKey = info[0].As<Napi::External<RegistryKey>>().Data();
 }
 
-// string name, bool writable -> RegistryKeyWrapper
-Napi::Value RegistryKeyWrapper::OpenSubkey(const Napi::CallbackInfo &info)
+Napi::Value RegistryKeyWrapper::Close(const Napi::CallbackInfo &info)
 {
   Napi::Env env = info.Env();
   try
   {
-    if (info.Length() != 2)
+    if (info.Length() != 0)
     {
       Napi::TypeError::New(env, "Wrong number of arguments")
           .ThrowAsJavaScriptException();
       return env.Null();
     }
 
-    if (!info[0].IsString())
-    {
-      Napi::TypeError::New(env, "Value name should be a string")
-          .ThrowAsJavaScriptException();
-      return env.Null();
-    }
+    this->_registryKey->Release();
+    delete this->_registryKey;
 
-    if (!info[1].IsBoolean())
-    {
-      Napi::TypeError::New(env, "Writable should be a boolean")
-          .ThrowAsJavaScriptException();
-      return env.Null();
-    }
-
-    auto name = info[0].As<Napi::String>().Utf8Value().c_str();
-    auto writable = info[1].As<Napi::Boolean>().Value();
-
-    if (this->_registryKey->handle != HKEY_LOCAL_MACHINE)
-    {
-      Napi::TypeError::New(env, "Hive handle is not valid")
-          .ThrowAsJavaScriptException();
-      return env.Null();
-    }
-
-    auto subKey = this->_registryKey->OpenSubkey(name, writable);
-
-    if (!subKey.IsValid())
-    {
-      Napi::TypeError::New(env, "Subkey does not exist")
-          .ThrowAsJavaScriptException();
-      return env.Null();
-    }
-
-    return RegistryKeyWrapper::NewInstance(info.Env(), Napi::External<RegistryKey>::New(env, &subKey));
+    return env.Null();
   }
   catch (const RegistryException &e)
   {
@@ -139,6 +108,55 @@ Napi::Value RegistryKeyWrapper::GetValue(const Napi::CallbackInfo &info)
     auto value = this->_registryKey->GetStringOrExpandString(name);
 
     return Napi::String::New(env, value);
+  }
+  catch (const RegistryException &e)
+  {
+    Napi::TypeError::New(env, e.Message())
+        .ThrowAsJavaScriptException();
+    return env.Null();
+  }
+}
+
+// string name, bool writable -> RegistryKeyWrapper
+Napi::Value RegistryKeyWrapper::OpenSubkey(const Napi::CallbackInfo &info)
+{
+  Napi::Env env = info.Env();
+  try
+  {
+    if (info.Length() != 2)
+    {
+      Napi::TypeError::New(env, "Wrong number of arguments")
+          .ThrowAsJavaScriptException();
+      return env.Null();
+    }
+
+    if (!info[0].IsString())
+    {
+      Napi::TypeError::New(env, "Value name should be a string")
+          .ThrowAsJavaScriptException();
+      return env.Null();
+    }
+
+    if (!info[1].IsBoolean())
+    {
+      Napi::TypeError::New(env, "Writable should be a boolean")
+          .ThrowAsJavaScriptException();
+      return env.Null();
+    }
+
+    auto name = info[0].As<Napi::String>().Utf8Value().c_str();
+    auto writable = info[1].As<Napi::Boolean>().Value();
+
+    auto subKey = this->_registryKey->OpenSubkey(name, writable);
+
+    if (!subKey.IsValid())
+    {
+      Napi::TypeError::New(env, "Subkey is invalid")
+          .ThrowAsJavaScriptException();
+      return env.Null();
+    }
+
+    return RegistryKeyWrapper::NewInstance(info.Env(), Napi::External<RegistryKey>::New(env, subKey.Malloc()));
   }
   catch (const RegistryException &e)
   {
@@ -183,17 +201,17 @@ Napi::Value OpenHive(const Napi::CallbackInfo &info)
                           : false;
 
     auto registryKey = isWritableDefined
-                           ? new RegistryKey(hive, isWritable, true)
-                           : new RegistryKey(hive, getDefaultIsWritable(hiveP), true);
+                           ? RegistryKey(hive, isWritable, true)
+                           : RegistryKey(hive, getDefaultIsWritable(hiveP), true);
 
-    if (!registryKey->IsValid())
+    if (!registryKey.IsValid())
     {
       Napi::TypeError::New(env, "Hive is not valid")
           .ThrowAsJavaScriptException();
       return env.Null();
     }
 
-    return RegistryKeyWrapper::NewInstance(info.Env(), Napi::External<RegistryKey>::New(env, registryKey));
+    return RegistryKeyWrapper::NewInstance(info.Env(), Napi::External<RegistryKey>::New(env, registryKey.Malloc()));
   }
   catch (const RegistryException &e)
   {
@@ -213,6 +231,7 @@ Napi::Function RegistryKeyWrapper::GetClass(Napi::Env env)
           //RegistryKeyWrapper::InstanceMethod("subkeyNames", &RegistryKeyWrapper::SubkeyNames),
           //RegistryKeyWrapper::InstanceMethod("valueNames", &RegistryKeyWrapper::ValueNames),
           RegistryKeyWrapper::InstanceMethod("getValue", &RegistryKeyWrapper::GetValue),
+          RegistryKeyWrapper::InstanceMethod("close", &RegistryKeyWrapper::Close),
       });
 }
 

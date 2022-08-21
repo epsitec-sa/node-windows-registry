@@ -38,9 +38,13 @@ function openKey(name, options) {
     isWritableDefined ? options.writable : null
   );
 
-  return new RegistryKey(
-    hiveKey.openSubkey(name, isWritableDefined ? options.writable : false)
+  const subKey = hiveKey.openSubkey(
+    name,
+    isWritableDefined ? options.writable : false
   );
+  hiveKey.close();
+
+  return new RegistryKey(subKey);
 }
 
 module.exports = {

@@ -80,8 +80,10 @@ namespace Epsitec
 			RegistryKey(const RegistryKey &key) = delete;
 			RegistryKey &operator=(const RegistryKey &key) = delete;
 
+			RegistryKey *Malloc();
+			void Release();
+
 		public:
-			HKEY handle;
 			bool IsValid() const { return this->handle != nullptr; }
 			bool IsSystemKey() const { return (this->state & 2) != 0; }
 			bool IsWritable() const { return (this->state & 4) != 0; }
@@ -153,6 +155,7 @@ namespace Epsitec
 			std::vector<BYTE> GetValue(LPCTSTR name, const std::vector<BYTE> &defaultValue, RegistryValueKind &valueKind) const;
 
 		private:
+			RegistryKey(HKEY handle, int state, RegistryView regView); // only used for dynamical allocation
 			REGSAM AccessMask(bool writable) const { return RegistryKey::AccessMask(this->IsWritable(), this->regView); }
 			HKEY DetachHandle() { return reinterpret_cast<HKEY>(::InterlockedExchangePointer(reinterpret_cast<void **>(&this->handle), nullptr)); }
 			bool DeleteSubkeyTreeInternal(LPCTSTR name) const;
@@ -165,8 +168,10 @@ namespace Epsitec
 			static REGSAM AccessMask(bool writable, RegistryView regView) { return (writable ? KEY_WRITE | KEY_READ : KEY_READ) | (REGSAM)regView; }
 
 		private:
+			HKEY handle;
 			int state;
 			RegistryView regView;
+			bool isDynamicallyAllocated;
 		};
 	}
 }

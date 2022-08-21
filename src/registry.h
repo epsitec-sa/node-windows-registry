@@ -17,6 +17,8 @@ public:
     //Napi::Value ValueNames(const Napi::CallbackInfo &);
     Napi::Value GetValue(const Napi::CallbackInfo &);
 
+    Napi::Value Close(const Napi::CallbackInfo &);
+
     static Napi::Function GetClass(Napi::Env);
     static Napi::Object NewInstance(Napi::Env env, Napi::Value arg);
 

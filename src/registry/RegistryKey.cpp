@@ -11,6 +11,7 @@ namespace Epsitec
 		{
 			this->handle = handle;
 			this->regView = regView;
+			this->isDynamicallyAllocated = false;
 
 			this->state = 0;
 			if (systemKey)
@@ -18,15 +19,38 @@ namespace Epsitec
 			if (writable)
 				this->state |= 4;
 		}
+		RegistryKey::RegistryKey(HKEY handle, int state, RegistryView regView)
+		{
+			// only used for dynamical allocation
+			this->handle = handle;
+			this->state = state;
+			this->regView = regView;
+			this->isDynamicallyAllocated = true;
+		}
 		RegistryKey::RegistryKey(RegistryKey &&key)
 		{
 			this->handle = const_cast<RegistryKey &>(key).DetachHandle();
 			this->regView = key.regView;
 			this->state = key.state;
+			this->isDynamicallyAllocated = false;
 		}
 		RegistryKey::~RegistryKey()
 		{
-			if (!this->IsSystemKey())
+			if (!this->IsSystemKey() && !this->isDynamicallyAllocated)
+			{
+				auto handle = reinterpret_cast<HKEY>(::InterlockedExchangePointer(reinterpret_cast<void **>(&this->handle), nullptr));
+				if (handle != nullptr)
+					::RegCloseKey(handle);
+			}
+		}
+
+		RegistryKey *RegistryKey::Malloc()
+		{
+			return new RegistryKey(this->handle, this->state, this->regView);
+		}
+		void RegistryKey::Release()
+		{
+			if (this->isDynamicallyAllocated)
 			{
 				auto handle = reinterpret_cast<HKEY>(::InterlockedExchangePointer(reinterpret_cast<void **>(&this->handle), nullptr));
 				if (handle != nullptr)
@@ -352,6 +376,16 @@ namespace Epsitec
 				{
 					return buffer;
 				}
+				else
+				{
+					printf("Error during second call to RegQueryValueEx\n");
+					throw RegistryException(std::to_string(result).c_str());
+				}
+			}
+			else
+			{
+				printf("Error during first call to RegQueryValueEx\n");
+				throw RegistryException(std::to_string(result).c_str());
 			}
 			return defaultValue;
 		}
