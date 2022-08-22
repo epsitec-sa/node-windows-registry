@@ -12,6 +12,15 @@ class RegistryKey {
     this._registryKey = _registryKey;
   }
 
+  destructor() {
+    console.log("registry key is being released");
+    this._registryKey.close();
+  }
+
+  openSubkey(name, writable) {
+    return this._registryKey.openSubkey(name, writable);
+  }
+
   getValue(name) {
     return this._registryKey.getValue(name);
   }
@@ -19,9 +28,9 @@ class RegistryKey {
 
 function _openHive(hive, isWritableDefined, writable) {
   if (isWritableDefined) {
-    return registryAddon.openHive(hive, writable);
+    return new RegistryKey(registryAddon.openHive(hive, writable));
   } else {
-    return registryAddon.openHive(hive);
+    return new RegistryKey(registryAddon.openHive(hive));
   }
 }
 
@@ -42,7 +51,6 @@ function openKey(name, options) {
     name,
     isWritableDefined ? options.writable : false
   );
-  hiveKey.close();
 
   return new RegistryKey(subKey);
 }
