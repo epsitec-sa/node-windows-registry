@@ -79,7 +79,7 @@ namespace Epsitec
 			}
 			else
 			{
-				throw RegistryException(std::to_string(result).c_str());
+				throw RegistryException(result, _T("Error during call to RegOpenKeyEx\n"));
 			}
 		}
 		bool RegistryKey::DeleteSubkey(LPCTSTR subkey) const
@@ -378,14 +378,12 @@ namespace Epsitec
 				}
 				else
 				{
-					printf("Error during second call to RegQueryValueEx\n");
-					throw RegistryException(std::to_string(result).c_str());
+					throw RegistryException(result, _T("Error during second call to RegQueryValueEx\n"));
 				}
 			}
 			else
 			{
-				printf("Error during first call to RegQueryValueEx\n");
-				throw RegistryException(std::to_string(result).c_str());
+				throw RegistryException(result, _T("Error during first call to RegQueryValueEx\n"));
 			}
 			return defaultValue;
 		}

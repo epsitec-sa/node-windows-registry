@@ -36,6 +36,22 @@ HKEY getHandle(const int hive)
   }
 }
 
+Napi::Value handleRegistryException(const RegistryException &e, const Napi::Env &env)
+{
+  if (e.Code() != -1)
+  {
+    Napi::TypeError::New(env, std::to_string(e.Code()).c_str())
+        .ThrowAsJavaScriptException();
+  }
+  else
+  {
+    Napi::TypeError::New(env, e.Message())
+        .ThrowAsJavaScriptException();
+  }
+
+  return env.Null();
+}
+
 RegistryKeyWrapper::RegistryKeyWrapper(const Napi::CallbackInfo &info)
     : ObjectWrap(info)
 {
@@ -77,9 +93,7 @@ Napi::Value RegistryKeyWrapper::Close(const Napi::CallbackInfo &info)
   }
   catch (const RegistryException &e)
   {
-    Napi::TypeError::New(env, e.Message())
-        .ThrowAsJavaScriptException();
-    return env.Null();
+    return handleRegistryException(e, env);
   }
 }
 
@@ -103,17 +117,14 @@ Napi::Value RegistryKeyWrapper::GetValue(const Napi::CallbackInfo &info)
       return env.Null();
     }
 
-    auto name = info[0].As<Napi::String>().Utf8Value().c_str();
-
-    auto value = this->_registryKey->GetStringOrExpandString(name);
+    auto name = info[0].As<Napi::String>().Utf8Value();
+    auto value = this->_registryKey->GetStringOrExpandString(name.c_str());
 
     return Napi::String::New(env, value);
   }
   catch (const RegistryException &e)
   {
-    Napi::TypeError::New(env, e.Message())
-        .ThrowAsJavaScriptException();
-    return env.Null();
+    return handleRegistryException(e, env);
   }
 }
 
@@ -160,9 +171,7 @@ Napi::Value RegistryKeyWrapper::OpenSubkey(const Napi::CallbackInfo &info)
   }
   catch (const RegistryException &e)
   {
-    Napi::TypeError::New(env, e.Message())
-        .ThrowAsJavaScriptException();
-    return env.Null();
+    return handleRegistryException(e, env);
   }
 }
 
@@ -215,9 +224,7 @@ Napi::Value OpenHive(const Napi::CallbackInfo &info)
   }
   catch (const RegistryException &e)
   {
-    Napi::TypeError::New(env, e.Message())
-        .ThrowAsJavaScriptException();
-    return env.Null();
+    return handleRegistryException(e, env);
   }
 }
 

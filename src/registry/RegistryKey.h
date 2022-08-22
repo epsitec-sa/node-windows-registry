@@ -59,11 +59,27 @@ namespace Epsitec
 		class RegistryException
 		{
 		public:
-			RegistryException(LPCTSTR message) { this->message = message; }
+			RegistryException(LPCTSTR message)
+			{
+				this->code = -1;
+				this->message = message;
+			}
+			RegistryException(int code)
+			{
+				this->code = code;
+				this->message = nullptr;
+			}
+			RegistryException(int code, LPCTSTR message)
+			{
+				this->code = code;
+				this->message = message;
+			}
 			LPCTSTR Message() const { return this->message; }
+			int Code() const { return this->code; }
 
 		private:
 			LPCTSTR message;
+			int code;
 		};
 
 		//--------------------------------------------------------------------- RegistryKey
