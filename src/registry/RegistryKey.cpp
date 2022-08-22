@@ -46,6 +46,7 @@ namespace Epsitec
 
 		RegistryKey *RegistryKey::Malloc()
 		{
+			this->isDynamicallyAllocated = true; // this prevents destructor from releasing handle
 			return new RegistryKey(this->handle, this->state, this->regView);
 		}
 		void RegistryKey::Release()
