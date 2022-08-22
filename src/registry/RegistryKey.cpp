@@ -109,7 +109,7 @@ namespace Epsitec
 					auto names = key.SubkeyNames();
 					for (auto &&name : names)
 					{
-						if (!key.DeleteSubkeyTreeInternal(name))
+						if (!key.DeleteSubkeyTreeInternal(name.c_str()))
 							result = false;
 					}
 				}
