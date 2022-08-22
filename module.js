@@ -47,7 +47,23 @@ class RegistryKey {
   listValues(cb) {
     setImmediate(() => {
       try {
-        cb(null, this._registryKey.valueNames());
+        const values = {};
+        const valueNames = this._registryKey.valueNames();
+        for (let valueName of valueNames) {
+          values[valueName] = this._registryKey.getValue(valueName);
+        }
+
+        cb(null, values);
+      } catch (err) {
+        cb(err);
+      }
+    });
+  }
+
+  listSubkeys(cb) {
+    setImmediate(() => {
+      try {
+        cb(null, this._registryKey.subkeyNames());
       } catch (err) {
         cb(err);
       }

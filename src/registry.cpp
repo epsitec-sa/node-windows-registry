@@ -171,12 +171,12 @@ Napi::Value RegistryKeyWrapper::SubkeyNames(const Napi::CallbackInfo &info)
       return env.Null();
     }
 
-    auto subkeyNames = this->_registryKey->ValueNames();
+    auto subkeyNames = this->_registryKey->SubkeyNames();
     auto subkeyNamesArray = Napi::Array::New(env, subkeyNames.size());
 
     for (int i = 0; i < subkeyNames.size(); i++)
     {
-      subkeyNamesArray[i] = Napi::String::New(env, subkeyNames[i]);
+      subkeyNamesArray[i] = Napi::String::New(env, subkeyNames[i].c_str());
     }
 
     return subkeyNamesArray;
@@ -205,7 +205,7 @@ Napi::Value RegistryKeyWrapper::ValueNames(const Napi::CallbackInfo &info)
 
     for (int i = 0; i < valueNames.size(); i++)
     {
-      valueNamesArray[i] = Napi::String::New(env, valueNames[i]);
+      valueNamesArray[i] = Napi::String::New(env, valueNames[i].c_str());
     }
 
     return valueNamesArray;

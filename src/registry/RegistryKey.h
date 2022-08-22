@@ -18,6 +18,8 @@
 #include <windows.h>
 #include <WinDNS.h>
 
+typedef std::basic_string<TCHAR> tstring;
+
 namespace Epsitec
 {
 	namespace Win32
@@ -105,8 +107,8 @@ namespace Epsitec
 			bool IsWritable() const { return (this->state & 4) != 0; }
 			int SubkeyCount(LPDWORD maxSubkeyLength = nullptr) const;
 			int ValueCount(LPDWORD maxValueLength = nullptr) const;
-			std::vector<LPCTSTR> SubkeyNames() const;
-			std::vector<LPCTSTR> ValueNames() const;
+			std::vector<tstring> SubkeyNames() const;
+			std::vector<tstring> ValueNames() const;
 			RegistryKey CreateSubkey(LPCTSTR subkey, bool writable, RegistryOptions options = RegistryOptions::None) const;
 			RegistryKey OpenSubkey(LPCTSTR name, bool writable) const;
 			bool DeleteSubkey(LPCTSTR subkey = nullptr) const;

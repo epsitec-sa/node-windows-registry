@@ -137,42 +137,58 @@ namespace Epsitec
 				return valueCount;
 			return -1;
 		}
-		std::vector<LPCTSTR> RegistryKey::SubkeyNames() const
+		std::vector<tstring> RegistryKey::SubkeyNames() const
 		{
 			this->EnsureValid();
-			std::vector<LPCTSTR> names;
+			std::vector<tstring> names;
 			auto count = this->SubkeyCount();
 			if (count > 0)
 			{
+				TCHAR buffer[256];
 				for (int i = 0; i < count; ++i)
 				{
-					auto buffer = std::vector<BYTE>(256);
-					DWORD size = 256;
-					auto result = ::RegEnumKeyEx(this->handle, i, (LPTSTR)&buffer[0], &size, nullptr, nullptr, nullptr, nullptr);
+					DWORD size = sizeof(buffer);
+					auto result = ::RegEnumKeyEx(this->handle, i, buffer, &size, nullptr, nullptr, nullptr, nullptr);
 					if (result == ERROR_SUCCESS)
-						names.push_back((LPTSTR)&buffer[0]);
-					else
+					{
+						names.push_back(tstring(buffer));
+					}
+					else if (result == ERROR_NO_MORE_ITEMS)
+					{
 						break;
+					}
+					else
+					{
+						throw RegistryException(result, _T("Error during call to RegEnumKeyEx\n"));
+					}
 				}
 			}
 			return names;
 		}
-		std::vector<LPCTSTR> RegistryKey::ValueNames() const
+		std::vector<tstring> RegistryKey::ValueNames() const
 		{
 			this->EnsureValid();
-			std::vector<LPCTSTR> names;
+			std::vector<tstring> names;
 			auto count = this->ValueCount();
 			if (count > 0)
 			{
+				TCHAR buffer[256];
 				for (int i = 0; i < count; ++i)
 				{
-					auto buffer = std::vector<BYTE>(256);
-					DWORD size = 256;
-					auto result = ::RegEnumValue(this->handle, i, (LPTSTR)&buffer[0], &size, nullptr, nullptr, nullptr, nullptr);
+					DWORD size = sizeof(buffer);
+					auto result = ::RegEnumValue(this->handle, i, buffer, &size, nullptr, nullptr, nullptr, nullptr);
 					if (result == ERROR_SUCCESS)
-						names.push_back((LPTSTR)&buffer[0]);
-					else
+					{
+						names.push_back(tstring(buffer));
+					}
+					else if (result == ERROR_NO_MORE_ITEMS)
+					{
 						break;
+					}
+					else
+					{
+						throw RegistryException(result, _T("Error during call to RegEnumValue\n"));
+					}
 				}
 			}
 			return names;
