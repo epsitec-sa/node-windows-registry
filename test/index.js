@@ -4,26 +4,77 @@ const assert = require("assert");
 const lib = require("../");
 
 describe("OpenKey", function () {
-  it("should open a key", function () {
-    const key = lib.openKey("SOFTWARE\\Epsitec\\Cresus Monolith\\Setup", {
-      hive: lib.HKEY_LOCAL_MACHINE,
-    });
-
-    assert.ok(key);
-    assert.ok(key._registryKey);
+  it("should open a key", function (done) {
+    lib.openKey(
+      "SOFTWARE\\Epsitec\\Cresus Monolith\\Setup",
+      {
+        hive: lib.HKEY_LOCAL_MACHINE,
+      },
+      (err, key) => {
+        if (err) {
+          done(err);
+        } else {
+          assert.ok(key);
+          assert.ok(key._registryKey);
+          done();
+        }
+      }
+    );
   });
 });
 
 describe("GetValue", function () {
-  it("should open a key and get a value", function () {
-    const key = lib.openKey("SOFTWARE\\Epsitec\\Cresus Monolith\\Setup", {
-      hive: lib.HKEY_LOCAL_MACHINE,
-    });
+  it("should open a key and get a value", function (done) {
+    lib.openKey(
+      "SOFTWARE\\Epsitec\\Cresus Monolith\\Setup",
+      {
+        hive: lib.HKEY_LOCAL_MACHINE,
+      },
+      (err, key) => {
+        if (err) {
+          done(err);
+        } else {
+          assert.ok(key);
+          assert.ok(key._registryKey);
 
-    assert.ok(key);
-    assert.ok(key._registryKey);
+          key.getValue("InstallDir", (err2, installDir) => {
+            if (err2) {
+              done(err2);
+            } else {
+              assert.equal(installDir, "C:\\Program Files\\Cresus");
+              done();
+            }
+          });
+        }
+      }
+    );
+  });
+});
 
-    const installDir = key.getValue("InstallDir");
-    assert.equal(installDir, "C:\\Program Files\\Cresus");
+describe("ListValues", function () {
+  it("should open a key and list its values", function (done) {
+    lib.openKey(
+      "SOFTWARE\\Epsitec\\Cresus Monolith\\Setup",
+      {
+        hive: lib.HKEY_LOCAL_MACHINE,
+      },
+      (err, key) => {
+        if (err) {
+          done(err);
+        } else {
+          assert.ok(key);
+          assert.ok(key._registryKey);
+
+          key.listValues((err2, values) => {
+            if (err2) {
+              done(err2);
+            } else {
+              console.log(JSON.stringify(values));
+              done();
+            }
+          });
+        }
+      }
+    );
   });
 });

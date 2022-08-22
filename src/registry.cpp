@@ -211,7 +211,6 @@ Napi::Value OpenHive(const Napi::CallbackInfo &info)
   Napi::Env env = info.Env();
   try
   {
-
     unsigned int result = 0;
 
     if (info.Length() < 1 || info.Length() > 2)
