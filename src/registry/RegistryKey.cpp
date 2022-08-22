@@ -144,13 +144,13 @@ namespace Epsitec
 			auto count = this->SubkeyCount();
 			if (count > 0)
 			{
-				TCHAR buffer[256];
 				for (int i = 0; i < count; ++i)
 				{
-					DWORD size = sizeof(buffer);
-					auto result = ::RegEnumKeyEx(this->handle, i, buffer, &size, nullptr, nullptr, nullptr, nullptr);
+					auto buffer = std::vector<BYTE>(256);
+					DWORD size = 256;
+					auto result = ::RegEnumKeyEx(this->handle, i, (LPTSTR)&buffer[0], &size, nullptr, nullptr, nullptr, nullptr);
 					if (result == ERROR_SUCCESS)
-						names.push_back(buffer);
+						names.push_back((LPTSTR)&buffer[0]);
 					else
 						break;
 				}
@@ -164,13 +164,13 @@ namespace Epsitec
 			auto count = this->ValueCount();
 			if (count > 0)
 			{
-				TCHAR buffer[256];
 				for (int i = 0; i < count; ++i)
 				{
-					DWORD size = sizeof(buffer);
-					auto result = ::RegEnumValue(this->handle, i, buffer, &size, nullptr, nullptr, nullptr, nullptr);
+					auto buffer = std::vector<BYTE>(256);
+					DWORD size = 256;
+					auto result = ::RegEnumValue(this->handle, i, (LPTSTR)&buffer[0], &size, nullptr, nullptr, nullptr, nullptr);
 					if (result == ERROR_SUCCESS)
-						names.push_back(buffer);
+						names.push_back((LPTSTR)&buffer[0]);
 					else
 						break;
 				}

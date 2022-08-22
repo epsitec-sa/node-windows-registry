@@ -158,6 +158,64 @@ Napi::Value RegistryKeyWrapper::GetValue(const Napi::CallbackInfo &info)
   }
 }
 
+// () -> string[]
+Napi::Value RegistryKeyWrapper::SubkeyNames(const Napi::CallbackInfo &info)
+{
+  Napi::Env env = info.Env();
+  try
+  {
+    if (info.Length() != 0)
+    {
+      Napi::TypeError::New(env, "Wrong number of arguments")
+          .ThrowAsJavaScriptException();
+      return env.Null();
+    }
+
+    auto subkeyNames = this->_registryKey->ValueNames();
+    auto subkeyNamesArray = Napi::Array::New(env, subkeyNames.size());
+
+    for (int i = 0; i < subkeyNames.size(); i++)
+    {
+      subkeyNamesArray[i] = Napi::String::New(env, subkeyNames[i]);
+    }
+
+    return subkeyNamesArray;
+  }
+  catch (const RegistryException &e)
+  {
+    return handleRegistryException(e, env);
+  }
+}
+
+// () -> string[]
+Napi::Value RegistryKeyWrapper::ValueNames(const Napi::CallbackInfo &info)
+{
+  Napi::Env env = info.Env();
+  try
+  {
+    if (info.Length() != 0)
+    {
+      Napi::TypeError::New(env, "Wrong number of arguments")
+          .ThrowAsJavaScriptException();
+      return env.Null();
+    }
+
+    auto valueNames = this->_registryKey->ValueNames();
+    auto valueNamesArray = Napi::Array::New(env, valueNames.size());
+
+    for (int i = 0; i < valueNames.size(); i++)
+    {
+      valueNamesArray[i] = Napi::String::New(env, valueNames[i]);
+    }
+
+    return valueNamesArray;
+  }
+  catch (const RegistryException &e)
+  {
+    return handleRegistryException(e, env);
+  }
+}
+
 // string name, bool writable -> RegistryKeyWrapper
 Napi::Value RegistryKeyWrapper::OpenSubkey(const Napi::CallbackInfo &info)
 {
@@ -264,8 +322,8 @@ Napi::Function RegistryKeyWrapper::GetClass(Napi::Env env)
       "RegistryKeyWrapper",
       {
           RegistryKeyWrapper::InstanceMethod("openSubkey", &RegistryKeyWrapper::OpenSubkey),
-          //RegistryKeyWrapper::InstanceMethod("subkeyNames", &RegistryKeyWrapper::SubkeyNames),
-          //RegistryKeyWrapper::InstanceMethod("valueNames", &RegistryKeyWrapper::ValueNames),
+          RegistryKeyWrapper::InstanceMethod("subkeyNames", &RegistryKeyWrapper::SubkeyNames),
+          RegistryKeyWrapper::InstanceMethod("valueNames", &RegistryKeyWrapper::ValueNames),
           RegistryKeyWrapper::InstanceMethod("getValue", &RegistryKeyWrapper::GetValue),
           RegistryKeyWrapper::InstanceMethod("close", &RegistryKeyWrapper::Close),
       });

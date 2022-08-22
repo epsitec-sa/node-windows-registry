@@ -13,8 +13,8 @@ public:
     RegistryKeyWrapper(const Napi::CallbackInfo &);
 
     Napi::Value OpenSubkey(const Napi::CallbackInfo &);
-    //Napi::Value SubkeyNames(const Napi::CallbackInfo &);
-    //Napi::Value ValueNames(const Napi::CallbackInfo &);
+    Napi::Value SubkeyNames(const Napi::CallbackInfo &);
+    Napi::Value ValueNames(const Napi::CallbackInfo &);
     Napi::Value GetValue(const Napi::CallbackInfo &);
 
     Napi::Value Close(const Napi::CallbackInfo &);
