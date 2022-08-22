@@ -52,6 +52,38 @@ Napi::Value handleRegistryException(const RegistryException &e, const Napi::Env 
   return env.Null();
 }
 
+Napi::Value readValue(const RegistryKey *registryKey, LPCTSTR name, const Napi::Env &env)
+{
+  RegistryValueKind valueKind;
+  auto value = registryKey->GetValue(name, valueKind);
+
+  if (value.size() == 0)
+  {
+    return env.Null();
+  }
+
+  switch (valueKind)
+  {
+  case RegistryValueKind::String:
+  case RegistryValueKind::ExpandString:
+    return Napi::String::New(env, (LPCTSTR)&value[0]);
+  case RegistryValueKind::Binary:
+    Napi::TypeError::New(env, "Binary is not yet supported")
+        .ThrowAsJavaScriptException();
+    return env.Null();
+  case RegistryValueKind::DWord:
+    return Napi::Number::New(env, *(PDWORD)&value[0]);
+  case RegistryValueKind::MultiString:
+    Napi::TypeError::New(env, "Multistring is not yet supported")
+        .ThrowAsJavaScriptException();
+    return env.Null();
+  case RegistryValueKind::QWord:
+    return Napi::Number::New(env, *(PQWORD)&value[0]);
+  default:
+    return env.Null();
+  }
+}
+
 RegistryKeyWrapper::RegistryKeyWrapper(const Napi::CallbackInfo &info)
     : ObjectWrap(info)
 {
@@ -118,9 +150,7 @@ Napi::Value RegistryKeyWrapper::GetValue(const Napi::CallbackInfo &info)
     }
 
     auto name = info[0].As<Napi::String>().Utf8Value();
-    auto value = this->_registryKey->GetStringOrExpandString(name.c_str());
-
-    return Napi::String::New(env, value);
+    return readValue(this->_registryKey, name.c_str(), env);
   }
   catch (const RegistryException &e)
   {

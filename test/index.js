@@ -5,7 +5,7 @@ const lib = require("../");
 
 describe("OpenKey", function () {
   it("should open a key", function () {
-    const key = lib.openKey("SOFTWARE", {
+    const key = lib.openKey("SOFTWARE\\Epsitec\\Cresus Monolith\\Setup", {
       hive: lib.HKEY_LOCAL_MACHINE,
     });
 
