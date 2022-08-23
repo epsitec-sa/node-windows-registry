@@ -228,103 +228,8 @@ namespace Epsitec
 			return result == ERROR_SUCCESS;
 		}
 
-		//--------------------------------------------------------------------- GetDWord
-		RegistryValueKind RegistryKey::GetValueKind(LPCTSTR name) const
-		{
-			RegistryValueKind valueKind;
-			this->GetValue(name, valueKind);
-			return valueKind;
-		}
-
-		DWORD RegistryKey::GetDWord(LPCTSTR name, DWORD defaultValue) const
-		{
-			RegistryValueKind valueKind;
-			auto value = this->GetValue(name, valueKind);
-
-			if (valueKind != RegistryValueKind::Unknown || value.size() != 0)
-			{
-				if (valueKind != RegistryValueKind::DWord)
-					throw RegistryException(_T("Registry value is not a DWORD"));
-
-				if (value.size())
-					return *(PDWORD)&value[0];
-			}
-			return defaultValue;
-		}
-
-		//--------------------------------------------------------------------- GetQWord
-
-		QWORD RegistryKey::GetQWord(LPCTSTR name, QWORD defaultValue) const
-		{
-			RegistryValueKind valueKind;
-			auto value = this->GetValue(name, valueKind);
-
-			if (valueKind != RegistryValueKind::Unknown || value.size() != 0)
-			{
-				if (valueKind != RegistryValueKind::QWord)
-					throw RegistryException(_T("Registry value is not a QWORD"));
-
-				if (value.size())
-					return *(PQWORD)&value[0];
-			}
-			return defaultValue;
-		}
-
-		//--------------------------------------------------------------------- GetString
-
-		LPCTSTR RegistryKey::GetString(LPCTSTR name, LPCTSTR defaultValue) const
-		{
-			RegistryValueKind valueKind;
-			auto value = this->GetValue(name, valueKind);
-
-			if (valueKind != RegistryValueKind::Unknown || value.size() != 0)
-			{
-				if (valueKind != RegistryValueKind::String)
-					throw RegistryException(_T("Registry value is not a string"));
-
-				if (value.size())
-					return (LPCTSTR)&value[0];
-			}
-			return defaultValue;
-		}
-
-		//--------------------------------------------------------------------- GetExpandString
-
-		LPCTSTR RegistryKey::GetExpandString(LPCTSTR name, LPCTSTR defaultValue) const
-		{
-			RegistryValueKind valueKind;
-			auto value = this->GetValue(name, valueKind);
-
-			if (valueKind != RegistryValueKind::Unknown || value.size() != 0)
-			{
-				if (valueKind != RegistryValueKind::ExpandString)
-					throw RegistryException(_T("Registry value is not an expand string"));
-
-				if (value.size())
-					return (LPCTSTR)&value[0];
-			}
-			return defaultValue;
-		}
-
-		//--------------------------------------------------------------------- GetStringOrExpandString
-
-		LPCTSTR RegistryKey::GetStringOrExpandString(LPCTSTR name, LPCTSTR defaultValue, RegistryValueKind &valueKind) const
-		{
-			auto value = this->GetValue(name, valueKind);
-
-			if (valueKind != RegistryValueKind::Unknown || value.size() != 0)
-			{
-				if (valueKind != RegistryValueKind::String && valueKind != RegistryValueKind::ExpandString)
-					throw RegistryException(_T("Registry value is neither a string nor an expand string"));
-
-				if (value.size())
-					return (LPCTSTR)&value[0];
-			}
-			return defaultValue;
-		}
-
 		//--------------------------------------------------------------------- GetMultiString
-
+		/*
 		std::vector<LPCTSTR> RegistryKey::GetMultiString(LPCTSTR name, const std::vector<LPCTSTR> &defaultValue) const
 		{
 			RegistryValueKind valueKind;
@@ -369,18 +274,10 @@ namespace Epsitec
 			}
 			return defaultValue;
 		}
-
+*/
 		//--------------------------------------------------------------------- GetValue
 
 		std::vector<BYTE> RegistryKey::GetValue(LPCTSTR name, RegistryValueKind &valueKind) const
-		{
-			return this->GetValue(name, std::vector<BYTE>(), valueKind);
-		}
-		std::vector<BYTE> RegistryKey::GetValue(LPCTSTR name, std::vector<BYTE> &&defaultValue, RegistryValueKind &valueKind) const
-		{
-			return this->GetValue(name, defaultValue, valueKind);
-		}
-		std::vector<BYTE> RegistryKey::GetValue(LPCTSTR name, const std::vector<BYTE> &defaultValue, RegistryValueKind &valueKind) const
 		{
 			this->EnsureValid();
 			DWORD size;
@@ -402,7 +299,6 @@ namespace Epsitec
 			{
 				throw RegistryException(result, _T("Error during first call to RegQueryValueEx\n"));
 			}
-			return defaultValue;
 		}
 
 		//--------------------------------------------------------------------- Exceptions

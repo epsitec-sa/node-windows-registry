@@ -129,48 +129,7 @@ namespace Epsitec
 			bool SetBinary(LPCTSTR name, std::vector<BYTE> value) const { return this->SetValueInternal(name, RegistryValueKind::Binary, &value[0], (DWORD)value.size()); }
 			bool SetValue(LPCTSTR name, std::vector<BYTE> value, RegistryValueKind valueKind) const { return this->SetValueInternal(name, valueKind, &value[0], (DWORD)value.size()); }
 
-			RegistryValueKind GetValueKind(LPCTSTR name) const;
-			int GetInt(LPCTSTR name) const { return (int)this->GetDWord(name, 0); }
-			int GetInt(LPCTSTR name, int defaultValue) const { return (int)this->GetDWord(name, defaultValue); }
-			unsigned int GetUInt(LPCTSTR name) const { return (unsigned int)this->GetDWord(name, 0); }
-			unsigned int GetUInt(LPCTSTR name, unsigned int defaultValue) const { return (unsigned int)this->GetDWord(name, defaultValue); }
-			long GetLong(LPCTSTR name) const { return (long)this->GetDWord(name, 0); }
-			long GetLong(LPCTSTR name, long defaultValue) const { return (long)this->GetDWord(name, defaultValue); }
-			unsigned long GetULong(LPCTSTR name) const { return (unsigned long)this->GetDWord(name, 0); }
-			unsigned long GetULong(LPCTSTR name, unsigned long defaultValue) const { return (unsigned long)this->GetDWord(name, defaultValue); }
-			long long GetLLong(LPCTSTR name) const { return (long long)this->GetQWord(name, 0); }
-			long long GetLLong(LPCTSTR name, long long defaultValue) const { return (long long)this->GetQWord(name, defaultValue); }
-			unsigned long long GetULLong(LPCTSTR name) const { return (unsigned long long)this->GetQWord(name, 0); }
-			unsigned long long GetULLong(LPCTSTR name, unsigned long long defaultValue) const { return (unsigned long long)this->GetQWord(name, defaultValue); }
-			DWORD GetDWord(LPCTSTR name) const { return this->GetDWord(name, 0); }
-			DWORD GetDWord(LPCTSTR name, DWORD defaultValue) const;
-			QWORD GetQWord(LPCTSTR name) const { return this->GetQWord(name, 0); }
-			QWORD GetQWord(LPCTSTR name, QWORD defaultValue) const;
-			LPCTSTR GetString(LPCTSTR name) const { return this->GetString(name, _T("")); }
-			LPCTSTR GetString(LPCTSTR name, LPCTSTR defaultValue) const;
-			LPCTSTR GetExpandString(LPCTSTR name) const { return this->GetExpandString(name, _T("")); }
-			LPCTSTR GetExpandString(LPCTSTR name, LPCTSTR defaultValue) const;
-			LPCTSTR GetStringOrExpandString(LPCTSTR name) const
-			{
-				RegistryValueKind valueKind;
-				return this->GetStringOrExpandString(name, _T(""), valueKind);
-			}
-			LPCTSTR GetStringOrExpandString(LPCTSTR name, LPCTSTR defaultValue) const
-			{
-				RegistryValueKind valueKind;
-				return this->GetStringOrExpandString(name, defaultValue, valueKind);
-			}
-			LPCTSTR GetStringOrExpandString(LPCTSTR name, RegistryValueKind &valueKind) const { return this->GetStringOrExpandString(name, _T(""), valueKind); }
-			LPCTSTR GetStringOrExpandString(LPCTSTR name, LPCTSTR defaultValue, RegistryValueKind &valueKind) const;
-			std::vector<LPCTSTR> GetMultiString(LPCTSTR name) const { return this->GetMultiString(name, std::vector<LPCTSTR>()); }
-			std::vector<LPCTSTR> GetMultiString(LPCTSTR name, std::vector<LPCTSTR> &&defaultValue) const { return this->GetMultiString(name, defaultValue); }
-			std::vector<LPCTSTR> GetMultiString(LPCTSTR name, const std::vector<LPCTSTR> &defaultValue) const;
-			std::vector<BYTE> GetBinary(LPCTSTR name) const { return this->GetBinary(name, std::vector<BYTE>()); }
-			std::vector<BYTE> GetBinary(LPCTSTR name, std::vector<BYTE> &&defaultValue) const { return this->GetBinary(name, defaultValue); }
-			std::vector<BYTE> GetBinary(LPCTSTR name, const std::vector<BYTE> &defaultValue) const;
 			std::vector<BYTE> GetValue(LPCTSTR name, RegistryValueKind &valueKind) const;
-			std::vector<BYTE> GetValue(LPCTSTR name, std::vector<BYTE> &&defaultValue, RegistryValueKind &valueKind) const;
-			std::vector<BYTE> GetValue(LPCTSTR name, const std::vector<BYTE> &defaultValue, RegistryValueKind &valueKind) const;
 
 		private:
 			RegistryKey(HKEY handle, int state, RegistryView regView); // only used for dynamical allocation

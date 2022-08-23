@@ -2,7 +2,7 @@
 
 #include <napi.h>
 
-#include "registry/Registry.h"
+#include "registry/RegistryKey.h"
 
 using namespace Napi;
 using namespace Epsitec::Win32;
