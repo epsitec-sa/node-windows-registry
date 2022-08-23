@@ -129,7 +129,7 @@ namespace Epsitec
 			bool SetBinary(LPCTSTR name, std::vector<BYTE> value) const { return this->SetValueInternal(name, RegistryValueKind::Binary, &value[0], (DWORD)value.size()); }
 			bool SetValue(LPCTSTR name, std::vector<BYTE> value, RegistryValueKind valueKind) const { return this->SetValueInternal(name, valueKind, &value[0], (DWORD)value.size()); }
 
-			std::vector<BYTE> GetValue(LPCTSTR name, RegistryValueKind &valueKind) const;
+			std::vector<BYTE> GetValue(std::wstring name, RegistryValueKind &valueKind) const;
 
 		private:
 			RegistryKey(HKEY handle, int state, RegistryView regView); // only used for dynamical allocation

@@ -277,15 +277,16 @@ namespace Epsitec
 */
 		//--------------------------------------------------------------------- GetValue
 
-		std::vector<BYTE> RegistryKey::GetValue(LPCTSTR name, RegistryValueKind &valueKind) const
+		std::vector<BYTE> RegistryKey::GetValue(std::wstring name, RegistryValueKind &valueKind) const
 		{
 			this->EnsureValid();
+			auto nameW = name.c_str();
 			DWORD size;
-			auto result = ::RegQueryValueEx(this->handle, name, nullptr, (LPDWORD)&valueKind, nullptr, &size);
+			auto result = ::RegQueryValueExW(this->handle, nameW, nullptr, (LPDWORD)&valueKind, nullptr, &size);
 			if (result == ERROR_SUCCESS)
 			{
 				auto buffer = std::vector<BYTE>(size);
-				result = ::RegQueryValueEx(this->handle, name, nullptr, (LPDWORD)&valueKind, &buffer[0], &size);
+				result = ::RegQueryValueExW(this->handle, nameW, nullptr, (LPDWORD)&valueKind, &buffer[0], &size);
 				if (result == ERROR_SUCCESS)
 				{
 					return buffer;

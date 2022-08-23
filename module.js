@@ -59,6 +59,13 @@ class RegistryKey {
     this._registryKey.close();
   }
 
+  _getValue(name) {
+    const value = this._registryKey.getValue(name);
+    return value && typeof value === "string"
+      ? value.replace(/\0/g, "")
+      : value;
+  }
+
   openSubkey(name, writable, cb) {
     setImmediate(
       (name, writable) => {
@@ -79,7 +86,7 @@ class RegistryKey {
   getValue(name, cb) {
     setImmediate((name) => {
       try {
-        cb(null, this._registryKey.getValue(name));
+        cb(null, this._getValue(name));
       } catch (err) {
         cb(err);
       }
@@ -92,7 +99,7 @@ class RegistryKey {
         const values = {};
         const valueNames = this._registryKey.valueNames();
         for (let valueName of valueNames) {
-          values[valueName] = this._registryKey.getValue(valueName);
+          values[valueName] = this._getValue(valueName);
         }
 
         cb(null, values);

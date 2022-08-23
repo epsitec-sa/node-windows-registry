@@ -2,6 +2,40 @@
 
 #include "registry.h"
 
+#include <locale>
+#include <codecvt>
+
+std::string WideCharToAnsi(LPCWSTR pwstr)
+{
+  int bytesneeded = WideCharToMultiByte(CP_UTF8, 0, pwstr, -1, NULL, 0, NULL, NULL);
+  std::string ansi(bytesneeded, ' ');
+  char *buffer = (char *)ansi.data();
+  BOOL UsedDefaultChar;
+  WideCharToMultiByte(CP_UTF8, 0, pwstr, -1, buffer, bytesneeded, NULL, &UsedDefaultChar);
+
+  // HACK pour corriger l'issue #1513.
+  // WideCharToMultiByte remplace tous les caractères entre 128 et 159 par un `?`.
+  // Donc on remplaces ces '?` par le caractère original pour autant qu'il était < 255
+  for (int i = 0; i < bytesneeded; i++)
+  {
+    if (buffer[i] == '?' && pwstr[i] < 255)
+    {
+      buffer[i] = static_cast<char>(pwstr[i]);
+    }
+  }
+  return ansi;
+}
+
+std::wstring AnsiToWideChar(std::string input)
+{
+  auto inputA = (LPCSTR)input.c_str();
+  int charsneeded = MultiByteToWideChar(CP_UTF8, 0, inputA, -1, NULL, 0);
+  std::wstring retval(charsneeded, ' ');
+  WCHAR *buffer = (WCHAR *)retval.data();
+  MultiByteToWideChar(CP_UTF8, 0, inputA, -1, buffer, charsneeded);
+  return retval;
+}
+
 bool getDefaultIsWritable(const int hive)
 {
   switch (hive)
@@ -52,7 +86,7 @@ Napi::Value handleRegistryException(const RegistryException &e, const Napi::Env 
   return env.Null();
 }
 
-Napi::Value readValue(const RegistryKey *registryKey, LPCTSTR name, const Napi::Env &env)
+Napi::Value readValue(const RegistryKey *registryKey, std::wstring name, const Napi::Env &env)
 {
   RegistryValueKind valueKind;
   auto value = registryKey->GetValue(name, valueKind);
@@ -66,7 +100,7 @@ Napi::Value readValue(const RegistryKey *registryKey, LPCTSTR name, const Napi::
   {
   case RegistryValueKind::String:
   case RegistryValueKind::ExpandString:
-    return Napi::String::New(env, (LPCTSTR)&value[0]);
+    return Napi::String::New(env, WideCharToAnsi((LPCWSTR)&value[0]));
   case RegistryValueKind::Binary:
     printf("Warning: reading binary registry values is not yet supported");
     return env.Null();
@@ -148,7 +182,9 @@ Napi::Value RegistryKeyWrapper::GetValue(const Napi::CallbackInfo &info)
     }
 
     auto name = info[0].As<Napi::String>().Utf8Value();
-    return readValue(this->_registryKey, name.c_str(), env);
+    auto nameW = AnsiToWideChar(name);
+
+    return readValue(this->_registryKey, nameW, env);
   }
   catch (const RegistryException &e)
   {
