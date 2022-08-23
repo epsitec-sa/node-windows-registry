@@ -16,6 +16,8 @@ describe("OpenKey", function () {
         } else {
           assert.ok(key);
           assert.ok(key._registryKey);
+
+          key.dispose();
           done();
         }
       }
@@ -42,6 +44,8 @@ describe("GetValue", function () {
               done(err2);
             } else {
               assert.equal(installDir, "C:\\Program Files\\Cresus");
+
+              key.dispose();
               done();
             }
           });
@@ -67,6 +71,8 @@ describe("GetValue", function () {
               done(err2);
             } else {
               assert.equal(accent, "no accent");
+
+              key.dispose();
               done();
             }
           });
@@ -96,6 +102,8 @@ describe("ListValues", function () {
             } else {
               assert.equal(!!values.InstallDir, true);
               assert.equal(values.InstallDir, "C:\\Program Files\\Cresus");
+
+              key.dispose();
               done();
             }
           });

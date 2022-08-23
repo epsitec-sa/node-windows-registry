@@ -7,15 +7,13 @@ const hives = {
   HKEY_CLASSES_ROOT: 0,
 };
 
-const finalizer = new FinalizationRegistry((registryKey) => {
-  console.log("registry key is being released");
-  registryKey.close();
-});
-
 class RegistryKey {
   constructor(_registryKey) {
     this._registryKey = _registryKey;
-    finalizer.register(this, this._registryKey);
+  }
+
+  dispose() {
+    this._registryKey.close();
   }
 
   openSubkey(name, writable, cb) {
@@ -112,7 +110,18 @@ function openKey(name, options, cb) {
         hiveKey.openSubkey(
           name,
           isWritableDefined ? options.writable : false,
-          cb
+          (err2, subkey) => {
+            try {
+              hiveKey.dispose();
+              if (err2) {
+                cb(err2);
+              } else {
+                cb(null, subkey);
+              }
+            } catch (err3) {
+              cb(err3);
+            }
+          }
         );
       }
     }
