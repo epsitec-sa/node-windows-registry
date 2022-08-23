@@ -108,7 +108,7 @@ namespace Epsitec
 			std::vector<std::wstring> SubkeyNames() const;
 			std::vector<std::wstring> ValueNames() const;
 			//RegistryKey CreateSubkey(LPCTSTR subkey, bool writable, RegistryOptions options = RegistryOptions::None) const;
-			RegistryKey OpenSubkey(std::wstring name, bool writable) const;
+			RegistryKey OpenSubkey(std::wstring name, bool writable, int view) const;
 			/*bool DeleteSubkey(LPCTSTR subkey = nullptr) const;
 			bool DeleteSubkeyTree(LPCTSTR name = nullptr) const;
 			bool DeleteValue(LPCTSTR name) const;*/
@@ -138,6 +138,7 @@ namespace Epsitec
 			void EnsureWritable() const;
 			/*bool SetValueInternal(LPCTSTR name, RegistryValueKind valueKind, LPBYTE value, DWORD size) const;
 			bool SetStringInternal(LPCTSTR name, LPCTSTR value, bool isExpandString) const;*/
+			RegistryView ComputeRegistryView(int newView) const;
 
 		private:
 			static REGSAM AccessMask(bool writable, RegistryView regView) { return (writable ? KEY_WRITE | KEY_READ : KEY_READ) | (REGSAM)regView; }

@@ -256,7 +256,7 @@ Napi::Value RegistryKeyWrapper::OpenSubkey(const Napi::CallbackInfo &info)
   Napi::Env env = info.Env();
   try
   {
-    if (info.Length() != 2)
+    if (info.Length() != 3)
     {
       Napi::TypeError::New(env, "Wrong number of arguments")
           .ThrowAsJavaScriptException();
@@ -277,11 +277,19 @@ Napi::Value RegistryKeyWrapper::OpenSubkey(const Napi::CallbackInfo &info)
       return env.Null();
     }
 
+    if (!info[2].IsNumber())
+    {
+      Napi::TypeError::New(env, "View should be a number")
+          .ThrowAsJavaScriptException();
+      return env.Null();
+    }
+
     auto name = info[0].As<Napi::String>().Utf8Value();
     auto nameW = AnsiToWideChar(name);
     auto writable = info[1].As<Napi::Boolean>().Value();
+    auto view = info[2].As<Napi::Number>().Int32Value();
 
-    auto subKey = this->_registryKey->OpenSubkey(nameW, writable);
+    auto subKey = this->_registryKey->OpenSubkey(nameW, writable, view);
 
     if (!subKey.IsValid())
     {

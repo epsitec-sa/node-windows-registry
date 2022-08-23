@@ -7,6 +7,12 @@ const hives = {
   HKEY_CLASSES_ROOT: 0,
 };
 
+const views = {
+  defaultView: 0,
+  x64: 1,
+  x86: 2,
+};
+
 const errors = {
   ItemNotFound: 2,
 };
@@ -66,20 +72,30 @@ class RegistryKey {
       : value;
   }
 
-  openSubkey(name, writable, cb) {
+  openSubkey(name, options, cb) {
     setImmediate(
-      (name, writable) => {
+      (name, options) => {
         try {
+          const writable =
+            options &&
+            options.writable !== undefined &&
+            options.writable !== null
+              ? options.writable
+              : false;
+          const view =
+            options && options.view !== undefined && options.view !== null
+              ? options.view
+              : views.defaultView;
           cb(
             null,
-            new RegistryKey(this._registryKey.openSubkey(name, writable))
+            new RegistryKey(this._registryKey.openSubkey(name, writable, view))
           );
         } catch (err) {
           cb(err);
         }
       },
       name,
-      writable
+      options
     );
   }
 
@@ -132,6 +148,8 @@ function openKey(name, options, cb) {
     options && options.hive ? options.hive : hives.HKEY_LOCAL_MACHINE;
   const isWritableDefined =
     options && options.writable !== null && options.writable !== undefined;
+  const isViewDefined =
+    options && options.view !== null && options.view !== undefined;
 
   _openHive(
     hive,
@@ -143,7 +161,10 @@ function openKey(name, options, cb) {
       } else {
         hiveKey.openSubkey(
           name,
-          isWritableDefined ? options.writable : false,
+          {
+            writable: isWritableDefined ? options.writable : false,
+            view: isViewDefined ? options.view : views.defaultView,
+          },
           (err2, subkey) => {
             try {
               hiveKey.dispose();
@@ -164,6 +185,7 @@ function openKey(name, options, cb) {
 
 module.exports = {
   openKey,
-  ...hives,
   isNotFoundError,
+  ...hives,
+  ...views,
 };

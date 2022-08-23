@@ -207,4 +207,31 @@ describe("ListSubkeys", function () {
       }
     );
   });
+  it("should open a key and list its subkeys in a wow key", function (done) {
+    lib.openKey(
+      "SOFTWARE\\Epsitec\\Admin",
+      {
+        hive: lib.HKEY_LOCAL_MACHINE,
+        view: lib.x86,
+      },
+      (err, key) => {
+        if (err) {
+          done(err);
+        } else {
+          assert.ok(key);
+          assert.ok(key._registryKey);
+
+          key.listSubkeys((err2, subkeys) => {
+            if (err2) {
+              done(err2);
+            } else {
+              assert.equal(subkeys.includes("Setup"), true);
+              key.dispose();
+              done();
+            }
+          });
+        }
+      }
+    );
+  });
 });

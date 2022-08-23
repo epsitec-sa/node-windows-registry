@@ -69,15 +69,16 @@ namespace Epsitec
 				return RegistryKey(hKey, writable, false, this->regView);
 			return RegistryKey();
 		}*/
-		RegistryKey RegistryKey::OpenSubkey(std::wstring name, bool writable) const
+		RegistryKey RegistryKey::OpenSubkey(std::wstring name, bool writable, int view) const
 		{
 			this->EnsureValid();
 			auto nameW = name.c_str();
+			auto newRegView = this->ComputeRegistryView(view);
 			HKEY hkey;
-			auto result = ::RegOpenKeyExW(this->handle, nameW, 0, this->AccessMask(writable), &hkey);
+			auto result = ::RegOpenKeyExW(this->handle, nameW, 0, this->AccessMask(writable, newRegView), &hkey);
 			if (result == ERROR_SUCCESS)
 			{
-				return RegistryKey(hkey, writable, false, this->regView);
+				return RegistryKey(hkey, writable, false, newRegView);
 			}
 			else
 			{
@@ -301,6 +302,24 @@ namespace Epsitec
 			{
 				throw RegistryException(result, _T("Error during first call to RegQueryValueEx\n"));
 			}
+		}
+
+		RegistryView RegistryKey::ComputeRegistryView(int newView) const
+		{
+			if (newView == 0) // default
+			{
+				return this->regView;
+			}
+			else if (newView == 1) //x64
+			{
+				return RegistryView::Registry64;
+			}
+			else if (newView == 2) //x86
+			{
+				return RegistryView::Registry32;
+			}
+
+			throw RegistryException(_T("Registry view is not supported."));
 		}
 
 		//--------------------------------------------------------------------- Exceptions
