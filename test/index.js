@@ -198,6 +198,7 @@ describe("ListSubkeys", function () {
               done(err2);
             } else {
               assert.equal(subkeys.includes("Setup"), true);
+              assert.equal(subkeys.includes("Tèsts"), true);
               key.dispose();
               done();
             }
