@@ -7,14 +7,15 @@ const hives = {
   HKEY_CLASSES_ROOT: 0,
 };
 
+const finalizer = new FinalizationRegistry((registryKey) => {
+  console.log("registry key is being released");
+  registryKey.close();
+});
+
 class RegistryKey {
   constructor(_registryKey) {
     this._registryKey = _registryKey;
-  }
-
-  destructor() {
-    console.log("registry key is being released");
-    this._registryKey.close();
+    finalizer.register(this, this._registryKey);
   }
 
   openSubkey(name, writable, cb) {
