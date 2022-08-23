@@ -8,26 +8,47 @@ const hives = {
 };
 
 const errors = {
-  Unknown: -1,
   ItemNotFound: 2,
 };
 
-function parseNativeError(err) {
-  if (err.message) {
+function _isNativeErrorWithCode(err, code) {
+  if (err && err.message) {
     try {
       const errValue = parseInt(err.message);
-      return {
-        code: errValue,
-      };
-    } catch (_err) {
-      return {
-        code: errors.Unknown,
-        message: err.message,
-      };
+      return errValue === code;
+    } catch (err2) {
+      return false;
     }
-  } else {
-    return err;
   }
+
+  return false;
+}
+
+function _openHive(hive, isWritableDefined, writable, cb) {
+  setImmediate(
+    (hive, isWritableDefined, writable) => {
+      try {
+        if (isWritableDefined) {
+          return cb(
+            null,
+            new RegistryKey(registryAddon.openHive(hive, writable))
+          );
+        } else {
+          return cb(null, new RegistryKey(registryAddon.openHive(hive)));
+        }
+      } catch (err) {
+        cb(err);
+      }
+    },
+    hive,
+    isWritableDefined,
+    writable
+  );
+}
+
+function isNotFoundError(err) {
+  console.log(JSON.stringify(err));
+  return _isNativeErrorWithCode(errors.ItemNotFound);
 }
 
 class RegistryKey {
@@ -48,7 +69,7 @@ class RegistryKey {
             new RegistryKey(this._registryKey.openSubkey(name, writable))
           );
         } catch (err) {
-          cb(parseNativeError(err));
+          cb(err);
         }
       },
       name,
@@ -61,7 +82,7 @@ class RegistryKey {
       try {
         cb(null, this._registryKey.getValue(name));
       } catch (err) {
-        cb(parseNativeError(err));
+        cb(err);
       }
     }, name);
   }
@@ -77,7 +98,7 @@ class RegistryKey {
 
         cb(null, values);
       } catch (err) {
-        cb(parseNativeError(err));
+        cb(err);
       }
     });
   }
@@ -87,32 +108,10 @@ class RegistryKey {
       try {
         cb(null, this._registryKey.subkeyNames());
       } catch (err) {
-        cb(parseNativeError(err));
+        cb(err);
       }
     });
   }
-}
-
-function _openHive(hive, isWritableDefined, writable, cb) {
-  setImmediate(
-    (hive, isWritableDefined, writable) => {
-      try {
-        if (isWritableDefined) {
-          return cb(
-            null,
-            new RegistryKey(registryAddon.openHive(hive, writable))
-          );
-        } else {
-          return cb(null, new RegistryKey(registryAddon.openHive(hive)));
-        }
-      } catch (err) {
-        cb(parseNativeError(err));
-      }
-    },
-    hive,
-    isWritableDefined,
-    writable
-  );
 }
 
 function openKey(name, options, cb) {
@@ -128,7 +127,7 @@ function openKey(name, options, cb) {
     isWritableDefined ? options.writable : null,
     (err, hiveKey) => {
       if (err) {
-        cb(parseNativeError(err));
+        cb(err);
       } else {
         hiveKey.openSubkey(
           name,
@@ -137,12 +136,12 @@ function openKey(name, options, cb) {
             try {
               hiveKey.dispose();
               if (err2) {
-                cb(parseNativeError(err2));
+                cb(err2);
               } else {
                 cb(null, subkey);
               }
             } catch (err3) {
-              cb(parseNativeError(err3));
+              cb(err3);
             }
           }
         );
@@ -154,5 +153,5 @@ function openKey(name, options, cb) {
 module.exports = {
   openKey,
   ...hives,
-  ...errors,
+  isNotFoundError,
 };
