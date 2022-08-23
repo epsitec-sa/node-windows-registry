@@ -47,7 +47,6 @@ function _openHive(hive, isWritableDefined, writable, cb) {
 }
 
 function isNotFoundError(err) {
-  console.log(JSON.stringify(err));
   return _isNativeErrorWithCode(errors.ItemNotFound);
 }
 

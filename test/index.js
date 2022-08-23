@@ -64,7 +64,7 @@ describe("GetValue", function () {
       }
     );
   });
-  it("should open a key with accent and get a value", function (done) {
+  it("should open a key and get a value with an accent in the name", function (done) {
     lib.openKey(
       "SOFTWARE\\Epsitec\\Cresus Monolith\\Tests",
       {
@@ -91,7 +91,7 @@ describe("GetValue", function () {
       }
     );
   });
-  it("should open a key and get a value with accent", function (done) {
+  it("should open a key and get a value with accent in value", function (done) {
     lib.openKey(
       "SOFTWARE\\Epsitec\\Cresus Monolith\\Tests",
       {
