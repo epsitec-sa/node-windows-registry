@@ -116,7 +116,7 @@ describe("ListValues", function () {
 describe("ListSubkeys", function () {
   it("should open a key and list its subkeys", function (done) {
     lib.openKey(
-      "SOFTWARE\\Epsitec",
+      "SOFTWARE\\Epsitec\\Cresus Monolith",
       {
         hive: lib.HKEY_LOCAL_MACHINE,
       },
@@ -131,7 +131,8 @@ describe("ListSubkeys", function () {
             if (err2) {
               done(err2);
             } else {
-              //assert.equal(length(subkeys), "C:\\Program Files\\Cresus");
+              assert.equal(subkeys.includes("Setup"), true);
+              key.dispose();
               done();
             }
           });
