@@ -1,6 +1,7 @@
 /*global describe,it*/
 
 const assert = require("assert");
+const { expect } = require("chai");
 const lib = require("../");
 
 describe("OpenKey", function () {
@@ -23,19 +24,15 @@ describe("OpenKey", function () {
       }
     );
   });
-  it("should not open an inexistent key", function (done) {
-    lib.openKey(
-      "SOFTWARE\\Epsitec\\Cresus Monolith\\Setup XYZ",
-      {
+  it("should throw on openning an inexistent key", async function () {
+    try {
+      await lib.openKey("SOFTWARE\\Epsitec\\Cresus Monolith\\Setup XYZ", {
         hive: lib.HKEY_LOCAL_MACHINE,
-      },
-      (err) => {
-        assert.ok(err);
-        assert.equal(err.code, lib.ItemNotFound);
-
-        done();
-      }
-    );
+      });
+    } catch (err) {
+      expect(err).to.be.instanceOf(TypeError);
+      assert.equal(lib.isNotFoundError(err), true);
+    }
   });
 });
 
@@ -67,7 +64,7 @@ describe("GetValue", function () {
       }
     );
   });
-  it("should open a key and get a value with accent", function (done) {
+  it("should open a key with accent and get a value", function (done) {
     lib.openKey(
       "SOFTWARE\\Epsitec\\Cresus Monolith\\Tests",
       {
@@ -85,6 +82,33 @@ describe("GetValue", function () {
               done(err2);
             } else {
               assert.equal(accent, "no accent");
+
+              key.dispose();
+              done();
+            }
+          });
+        }
+      }
+    );
+  });
+  it("should open a key and get a value with accent", function (done) {
+    lib.openKey(
+      "SOFTWARE\\Epsitec\\Cresus Monolith\\Tests",
+      {
+        hive: lib.HKEY_LOCAL_MACHINE,
+      },
+      (err, key) => {
+        if (err) {
+          done(err);
+        } else {
+          assert.ok(key);
+          assert.ok(key._registryKey);
+
+          key.getValue("Test", (err2, accent) => {
+            if (err2) {
+              done(err2);
+            } else {
+              assert.equal(accent, "Progràm Filés");
 
               key.dispose();
               done();
@@ -116,6 +140,34 @@ describe("ListValues", function () {
             } else {
               assert.equal(!!values.InstallDir, true);
               assert.equal(values.InstallDir, "C:\\Program Files\\Cresus");
+
+              key.dispose();
+              done();
+            }
+          });
+        }
+      }
+    );
+  });
+  it("should open a key and list its values with accent", function (done) {
+    lib.openKey(
+      "SOFTWARE\\Epsitec\\Cresus Monolith\\Tests",
+      {
+        hive: lib.HKEY_LOCAL_MACHINE,
+      },
+      (err, key) => {
+        if (err) {
+          done(err);
+        } else {
+          assert.ok(key);
+          assert.ok(key._registryKey);
+
+          key.listValues((err2, values) => {
+            if (err2) {
+              done(err2);
+            } else {
+              assert.equal(!!values["accént"], true);
+              assert.equal(values.Test, "Progràm Filés");
 
               key.dispose();
               done();
