@@ -59,7 +59,7 @@ namespace Epsitec
 			}
 		}
 
-		RegistryKey RegistryKey::CreateSubkey(LPCTSTR subkey, bool writable, RegistryOptions options) const
+		/*RegistryKey RegistryKey::CreateSubkey(LPCTSTR subkey, bool writable, RegistryOptions options) const
 		{
 			this->EnsureWritable();
 			HKEY hKey;
@@ -68,7 +68,7 @@ namespace Epsitec
 			if (result == ERROR_SUCCESS)
 				return RegistryKey(hKey, writable, false, this->regView);
 			return RegistryKey();
-		}
+		}*/
 		RegistryKey RegistryKey::OpenSubkey(LPCTSTR name, bool writable) const
 		{
 			this->EnsureValid();
@@ -83,7 +83,7 @@ namespace Epsitec
 				throw RegistryException(result, _T("Error during call to RegOpenKeyEx\n"));
 			}
 		}
-		bool RegistryKey::DeleteSubkey(LPCTSTR subkey) const
+		/*bool RegistryKey::DeleteSubkey(LPCTSTR subkey) const
 		{
 			this->EnsureWritable();
 			auto result = ::RegDeleteKeyEx(this->handle, subkey ? subkey : _T(""), (DWORD)this->regView, 0);
@@ -118,7 +118,7 @@ namespace Epsitec
 				result = false;
 
 			return result;
-		}
+		}*/
 		int RegistryKey::SubkeyCount(LPDWORD maxSubkeyLength) const
 		{
 			this->EnsureValid();
@@ -193,7 +193,7 @@ namespace Epsitec
 			}
 			return names;
 		}
-		bool RegistryKey::DeleteValue(LPCTSTR name) const
+		/*bool RegistryKey::DeleteValue(LPCTSTR name) const
 		{
 			this->EnsureWritable();
 			auto result = ::RegDeleteValue(this->handle, name);
@@ -226,7 +226,7 @@ namespace Epsitec
 			this->EnsureWritable();
 			auto result = ::RegSetValueEx(this->handle, name, 0, (DWORD)valueKind, value, size);
 			return result == ERROR_SUCCESS;
-		}
+		}*/
 
 		//--------------------------------------------------------------------- GetMultiString
 		/*

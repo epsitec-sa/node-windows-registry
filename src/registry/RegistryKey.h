@@ -109,12 +109,12 @@ namespace Epsitec
 			int ValueCount(LPDWORD maxValueLength = nullptr) const;
 			std::vector<tstring> SubkeyNames() const;
 			std::vector<tstring> ValueNames() const;
-			RegistryKey CreateSubkey(LPCTSTR subkey, bool writable, RegistryOptions options = RegistryOptions::None) const;
+			//RegistryKey CreateSubkey(LPCTSTR subkey, bool writable, RegistryOptions options = RegistryOptions::None) const;
 			RegistryKey OpenSubkey(LPCTSTR name, bool writable) const;
-			bool DeleteSubkey(LPCTSTR subkey = nullptr) const;
+			/*bool DeleteSubkey(LPCTSTR subkey = nullptr) const;
 			bool DeleteSubkeyTree(LPCTSTR name = nullptr) const;
-			bool DeleteValue(LPCTSTR name) const;
-
+			bool DeleteValue(LPCTSTR name) const;*/
+			/*
 			bool SetInt(LPCTSTR name, int value) const { return this->SetDWord(name, (DWORD)value); }
 			bool SetUInt(LPCTSTR name, unsigned int value) const { return this->SetDWord(name, (DWORD)value); }
 			bool SetLong(LPCTSTR name, long value) const { return this->SetDWord(name, (DWORD)value); }
@@ -128,7 +128,7 @@ namespace Epsitec
 			bool SetMultiString(LPCTSTR name, std::vector<LPCTSTR> value) const;
 			bool SetBinary(LPCTSTR name, std::vector<BYTE> value) const { return this->SetValueInternal(name, RegistryValueKind::Binary, &value[0], (DWORD)value.size()); }
 			bool SetValue(LPCTSTR name, std::vector<BYTE> value, RegistryValueKind valueKind) const { return this->SetValueInternal(name, valueKind, &value[0], (DWORD)value.size()); }
-
+*/
 			std::vector<BYTE> GetValue(std::wstring name, RegistryValueKind &valueKind) const;
 
 		private:
