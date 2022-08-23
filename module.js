@@ -99,7 +99,7 @@ class RegistryKey {
         const values = {};
         const valueNames = this._registryKey.valueNames();
         for (let valueName of valueNames) {
-          values[valueName] = this._getValue(valueName);
+          values[valueName.replace(/\0/g, "")] = this._getValue(valueName);
         }
 
         cb(null, values);
@@ -112,7 +112,13 @@ class RegistryKey {
   listSubkeys(cb) {
     setImmediate(() => {
       try {
-        cb(null, this._registryKey.subkeyNames());
+        const subkeys = [];
+        const subkeyNames = this._registryKey.subkeyNames();
+        for (let subkeyName of subkeyNames) {
+          subkeys.push(subkeyName.replace(/\0/g, ""));
+        }
+
+        cb(null, subkeys);
       } catch (err) {
         cb(err);
       }

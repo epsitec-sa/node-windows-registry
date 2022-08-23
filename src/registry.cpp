@@ -210,7 +210,7 @@ Napi::Value RegistryKeyWrapper::SubkeyNames(const Napi::CallbackInfo &info)
 
     for (int i = 0; i < subkeyNames.size(); i++)
     {
-      subkeyNamesArray[i] = Napi::String::New(env, subkeyNames[i].c_str());
+      subkeyNamesArray[i] = Napi::String::New(env, WideCharToAnsi((LPCWSTR)subkeyNames[i].c_str()));
     }
 
     return subkeyNamesArray;
@@ -239,7 +239,7 @@ Napi::Value RegistryKeyWrapper::ValueNames(const Napi::CallbackInfo &info)
 
     for (int i = 0; i < valueNames.size(); i++)
     {
-      valueNamesArray[i] = Napi::String::New(env, valueNames[i].c_str());
+      valueNamesArray[i] = Napi::String::New(env, WideCharToAnsi((LPCWSTR)valueNames[i].c_str()));
     }
 
     return valueNamesArray;
@@ -277,10 +277,11 @@ Napi::Value RegistryKeyWrapper::OpenSubkey(const Napi::CallbackInfo &info)
       return env.Null();
     }
 
-    auto name = info[0].As<Napi::String>().Utf8Value().c_str();
+    auto name = info[0].As<Napi::String>().Utf8Value();
+    auto nameW = AnsiToWideChar(name);
     auto writable = info[1].As<Napi::Boolean>().Value();
 
-    auto subKey = this->_registryKey->OpenSubkey(name, writable);
+    auto subKey = this->_registryKey->OpenSubkey(nameW, writable);
 
     if (!subKey.IsValid())
     {

@@ -69,11 +69,12 @@ namespace Epsitec
 				return RegistryKey(hKey, writable, false, this->regView);
 			return RegistryKey();
 		}*/
-		RegistryKey RegistryKey::OpenSubkey(LPCTSTR name, bool writable) const
+		RegistryKey RegistryKey::OpenSubkey(std::wstring name, bool writable) const
 		{
 			this->EnsureValid();
+			auto nameW = name.c_str();
 			HKEY hkey;
-			auto result = ::RegOpenKeyEx(this->handle, name, 0, this->AccessMask(writable), &hkey);
+			auto result = ::RegOpenKeyExW(this->handle, nameW, 0, this->AccessMask(writable), &hkey);
 			if (result == ERROR_SUCCESS)
 			{
 				return RegistryKey(hkey, writable, false, this->regView);
@@ -137,21 +138,21 @@ namespace Epsitec
 				return valueCount;
 			return -1;
 		}
-		std::vector<tstring> RegistryKey::SubkeyNames() const
+		std::vector<std::wstring> RegistryKey::SubkeyNames() const
 		{
 			this->EnsureValid();
-			std::vector<tstring> names;
+			std::vector<std::wstring> names;
 			auto count = this->SubkeyCount();
 			if (count > 0)
 			{
-				TCHAR buffer[256];
+				wchar_t buffer[256];
 				for (int i = 0; i < count; ++i)
 				{
 					DWORD size = sizeof(buffer);
-					auto result = ::RegEnumKeyEx(this->handle, i, buffer, &size, nullptr, nullptr, nullptr, nullptr);
+					auto result = ::RegEnumKeyExW(this->handle, i, buffer, &size, nullptr, nullptr, nullptr, nullptr);
 					if (result == ERROR_SUCCESS)
 					{
-						names.push_back(tstring(buffer));
+						names.push_back(std::wstring(buffer));
 					}
 					else if (result == ERROR_NO_MORE_ITEMS)
 					{
@@ -165,21 +166,21 @@ namespace Epsitec
 			}
 			return names;
 		}
-		std::vector<tstring> RegistryKey::ValueNames() const
+		std::vector<std::wstring> RegistryKey::ValueNames() const
 		{
 			this->EnsureValid();
-			std::vector<tstring> names;
+			std::vector<std::wstring> names;
 			auto count = this->ValueCount();
 			if (count > 0)
 			{
-				TCHAR buffer[256];
+				wchar_t buffer[256];
 				for (int i = 0; i < count; ++i)
 				{
 					DWORD size = sizeof(buffer);
-					auto result = ::RegEnumValue(this->handle, i, buffer, &size, nullptr, nullptr, nullptr, nullptr);
+					auto result = ::RegEnumValueW(this->handle, i, buffer, &size, nullptr, nullptr, nullptr, nullptr);
 					if (result == ERROR_SUCCESS)
 					{
-						names.push_back(tstring(buffer));
+						names.push_back(std::wstring(buffer));
 					}
 					else if (result == ERROR_NO_MORE_ITEMS)
 					{
