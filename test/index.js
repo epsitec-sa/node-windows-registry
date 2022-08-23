@@ -49,6 +49,31 @@ describe("GetValue", function () {
       }
     );
   });
+  it("should open a key and get a value with accent", function (done) {
+    lib.openKey(
+      "SOFTWARE\\Epsitec\\Cresus Monolith\\Tests",
+      {
+        hive: lib.HKEY_LOCAL_MACHINE,
+      },
+      (err, key) => {
+        if (err) {
+          done(err);
+        } else {
+          assert.ok(key);
+          assert.ok(key._registryKey);
+
+          key.getValue("accént", (err2, accent) => {
+            if (err2) {
+              done(err2);
+            } else {
+              assert.equal(accent, "no accent");
+              done();
+            }
+          });
+        }
+      }
+    );
+  });
 });
 
 describe("ListValues", function () {
@@ -69,7 +94,36 @@ describe("ListValues", function () {
             if (err2) {
               done(err2);
             } else {
-              console.log(JSON.stringify(values));
+              assert.equal(!!values.InstallDir, true);
+              assert.equal(values.InstallDir, "C:\\Program Files\\Cresus");
+              done();
+            }
+          });
+        }
+      }
+    );
+  });
+});
+
+describe("ListSubkeys", function () {
+  it("should open a key and list its subkeys", function (done) {
+    lib.openKey(
+      "SOFTWARE\\Epsitec",
+      {
+        hive: lib.HKEY_LOCAL_MACHINE,
+      },
+      (err, key) => {
+        if (err) {
+          done(err);
+        } else {
+          assert.ok(key);
+          assert.ok(key._registryKey);
+
+          key.listSubkeys((err2, subkeys) => {
+            if (err2) {
+              done(err2);
+            } else {
+              //assert.equal(length(subkeys), "C:\\Program Files\\Cresus");
               done();
             }
           });
