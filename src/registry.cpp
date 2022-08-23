@@ -68,14 +68,12 @@ Napi::Value readValue(const RegistryKey *registryKey, LPCTSTR name, const Napi::
   case RegistryValueKind::ExpandString:
     return Napi::String::New(env, (LPCTSTR)&value[0]);
   case RegistryValueKind::Binary:
-    Napi::TypeError::New(env, "Binary is not yet supported")
-        .ThrowAsJavaScriptException();
+    printf("Warning: reading binary registry values is not yet supported");
     return env.Null();
   case RegistryValueKind::DWord:
     return Napi::Number::New(env, *(PDWORD)&value[0]);
   case RegistryValueKind::MultiString:
-    Napi::TypeError::New(env, "Multistring is not yet supported")
-        .ThrowAsJavaScriptException();
+    printf("Warning: reading multistring registry values is not yet supported");
     return env.Null();
   case RegistryValueKind::QWord:
     return Napi::Number::New(env, *(PQWORD)&value[0]);
