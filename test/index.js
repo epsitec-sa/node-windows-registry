@@ -23,6 +23,20 @@ describe("OpenKey", function () {
       }
     );
   });
+  it("should not open an inexistent key", function (done) {
+    lib.openKey(
+      "SOFTWARE\\Epsitec\\Cresus Monolith\\Setup XYZ",
+      {
+        hive: lib.HKEY_LOCAL_MACHINE,
+      },
+      (err) => {
+        assert.ok(err);
+        assert.equal(err.code, lib.ItemNotFound);
+
+        done();
+      }
+    );
+  });
 });
 
 describe("GetValue", function () {
