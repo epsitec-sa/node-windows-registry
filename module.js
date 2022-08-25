@@ -2,9 +2,13 @@ const registryAddon = require("bindings")("registry.node");
 
 const hives = {
   HKEY_LOCAL_MACHINE: 2,
+  HKLM: 2,
   HKEY_CURRENT_USER: 1,
+  HKCU: 1,
   HKEY_USERS: 3,
+  HKU: 3,
   HKEY_CLASSES_ROOT: 0,
+  HKCR: 0,
 };
 
 const views = {
