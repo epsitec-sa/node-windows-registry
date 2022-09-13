@@ -57,7 +57,7 @@ function _openHive(hive, isWritableDefined, writable, cb) {
 }
 
 function isNotFoundError(err) {
-  return _isNativeErrorWithCode(errors.ItemNotFound);
+  return _isNativeErrorWithCode(err, errors.ItemNotFound);
 }
 
 class RegistryKey {
